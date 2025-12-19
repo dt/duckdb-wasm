@@ -367,11 +367,11 @@ serve_loadable_base: wasmpack shell docs
 	cp -r build/extension_repository packages/duckdb-wasm-app/build/release/.
 
 .PHONY: serve_local
-serve_local: build_loadable_unsigned serve_loadable_base
+serve_local: wasm_relsize build_loadable_unsigned serve_loadable_base
 	npx http-server packages/duckdb-wasm-app/build/release -o "#queries=v0,SET-custom_extension_repository%3D'http%3A%2F%2F127.0.0.1%3A8080%2Fextension_repository'~" -a 127.0.0.1 -p 8080
 
 .PHONY: serve
-serve: build_loadable serve_loadable_base
+serve: wasm_relsize build_loadable serve_loadable_base
 	npx http-server packages/duckdb-wasm-app/build/release -o
 
 .PHONY: app_server
