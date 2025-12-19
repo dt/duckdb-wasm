@@ -92,6 +92,18 @@ Extension sizes will vary depending, among other things, on provided functionali
 
 ## Build from source
 
+**Emscripten version requirement:** This project requires Emscripten **3.1.50 or earlier**. Emscripten 3.1.58+ removed the separate `.worker.js` file for pthreads ([PR #21701](https://github.com/emscripten-core/emscripten/pull/21701)), which breaks the COI threading build. Use [emsdk](https://github.com/emscripten-core/emsdk) to install the correct version:
+
+```shell
+git clone https://github.com/emscripten-core/emsdk.git
+cd emsdk
+./emsdk install 3.1.50
+./emsdk activate 3.1.50
+source ./emsdk_env.sh
+```
+
+Then build:
+
 ```shell
 git clone https://github.com/duckdb/duckdb-wasm.git
 cd duckdb-wasm

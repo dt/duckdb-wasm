@@ -6,6 +6,45 @@ trap exit SIGINT
 
 PROJECT_ROOT="$(cd $(dirname "$BASH_SOURCE[0]") && cd .. && pwd)" &> /dev/null
 
+# Check Emscripten version - must be <= 3.1.50
+# Emscripten 3.1.58+ removed the separate .worker.js file for pthreads,
+# which breaks the COI threading build. See: https://github.com/emscripten-core/emscripten/pull/21701
+# Additionally, versions 3.1.51-3.1.57 have binaryen version mismatches.
+EMCC_VERSION=$(emcc --version | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+EMCC_MAJOR=$(echo "$EMCC_VERSION" | cut -d. -f1)
+EMCC_MINOR=$(echo "$EMCC_VERSION" | cut -d. -f2)
+EMCC_PATCH=$(echo "$EMCC_VERSION" | cut -d. -f3)
+
+EMCC_TOO_NEW=false
+if [ "$EMCC_MAJOR" -gt 3 ]; then
+  EMCC_TOO_NEW=true
+elif [ "$EMCC_MAJOR" -eq 3 ] && [ "$EMCC_MINOR" -gt 1 ]; then
+  EMCC_TOO_NEW=true
+elif [ "$EMCC_MAJOR" -eq 3 ] && [ "$EMCC_MINOR" -eq 1 ] && [ "$EMCC_PATCH" -gt 50 ]; then
+  EMCC_TOO_NEW=true
+fi
+
+if [ "$EMCC_TOO_NEW" = true ]; then
+  echo "ERROR: Emscripten version $EMCC_VERSION is too new."
+  echo ""
+  echo "This project requires Emscripten 3.1.50 or earlier."
+  echo "Emscripten 3.1.58+ removed the separate .worker.js file for pthreads,"
+  echo "which breaks the COI (Cross-Origin Isolation) threading build."
+  echo "Versions 3.1.51-3.1.57 have binaryen version mismatches."
+  echo ""
+  echo "To install the correct version using emsdk:"
+  echo "  git clone https://github.com/emscripten-core/emsdk.git"
+  echo "  cd emsdk"
+  echo "  ./emsdk install 3.1.50"
+  echo "  ./emsdk activate 3.1.50"
+  echo "  source ./emsdk_env.sh"
+  echo ""
+  echo "See: https://github.com/emscripten-core/emscripten/pull/21701"
+  exit 1
+fi
+
+echo "Emscripten version: $EMCC_VERSION (OK)"
+
 MODE=${1:-Fast}
 FEATURES=${2:-mvp}
 DUCKDB_LOCATION=${3:-"$PROJECT_ROOT/submodules/duckdb"}
